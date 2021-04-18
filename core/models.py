@@ -28,7 +28,6 @@ class ProdutoPedido(models.Model):
 
 
 class Cliente(models.Model):
-    id = models.IntegerField('Id', null=True)
     cliente_id = models.IntegerField('Id do Cliente', primary_key=True)
     nome = models.CharField('Nome', max_length=255)
     sobrenome = models.CharField('Sobrenome', max_length=255)
