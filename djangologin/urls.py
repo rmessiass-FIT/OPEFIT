@@ -16,18 +16,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
-import djangologin.dash_app_code
+import djangologin.dash_app_code as dd
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('contas/', include('django.contrib.auth.urls')),
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
-    path('vendas/', TemplateView.as_view(template_name='vendas.html'), name='vendas'),
+    path('vendas/', dd.graficos_vendas, name='vendas'),
+    #path('vendas/', TemplateView.as_view(template_name='vendas.html'), name='vendas'),
     path('financeiro/', TemplateView.as_view(template_name='financeiro.html'), name='financeiro'),
     path('markerting/', TemplateView.as_view(template_name='markerting.html'), name='markerting'),
     path('outros/', TemplateView.as_view(template_name='outros.html'), name='outros'),
     path('outros_plot/', include('django_plotly_dash.urls')),
+    #path(r'core/', include('core.models')),
 
 ]
 

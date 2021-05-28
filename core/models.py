@@ -13,7 +13,7 @@ class Post(models.Model):
 
 class Produto(models.Model):
     SKU = models.CharField('SKU', max_length=50)
-    nome_produto = models.CharField('Nome do Produto', max_length=50)
+    nome_produto = models.CharField('Nome do Produto', max_length=50, primary_key=True)
     cor = models.CharField('Cor', max_length=20)
     tamanho = models.CharField('Tamanho', max_length=2)
     categoria = models.CharField('Categoria', max_length=20)
@@ -21,7 +21,7 @@ class Produto(models.Model):
 
 
 class ProdutoPedido(models.Model):
-    pedido_id = models.IntegerField('Id do Pedido')
+    pedido_id = models.IntegerField('Id do Pedido', primary_key=True)
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE, default=1)
     quantidade = models.IntegerField('Quantidade')
     preco_unitario = models.DecimalField('Preço Unitátio', max_digits=19, decimal_places=2)
@@ -41,7 +41,7 @@ class Cliente(models.Model):
 
 
 class Pedido(models.Model):
-    pedido_id = models.IntegerField('Id do Pedido')
+    pedido_id = models.IntegerField('Id do Pedido', primary_key=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, default=1)
     data_pedido = models.DateTimeField('Data do Pedido')
     data_pagamento = models.DateTimeField('Data do Pagamento')
@@ -60,7 +60,7 @@ class Pagamentos(models.Model):
 
 
 class ClienteOrigem(models.Model):
-    cliente_id = models.IntegerField('Id do Cliente')
+    cliente_id = models.IntegerField('Id do Cliente', primary_key=True)
     nome = models.CharField('Nome', max_length=255)
     sobrenome = models.CharField('Sobrenome', max_length=255)
     telefone = models.CharField('Telefone', max_length=255)
@@ -76,7 +76,7 @@ class ClienteOrigem(models.Model):
 
 
 class PedidoOrigem(models.Model):
-    pedido_id = models.IntegerField('Id do Cliente')
+    pedido_id = models.IntegerField('Id do Cliente', primary_key=True)
     cliente_id = models.ForeignKey(ClienteOrigem, on_delete=models.CASCADE, default=1)
     data_pedido = models.DateTimeField('Data do Pedido')
     data_pagamento = models.DateTimeField('Data do Pagamento')

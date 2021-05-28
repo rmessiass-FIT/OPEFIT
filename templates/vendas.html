@@ -1,11 +1,37 @@
+{% load plotly_dash %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv=”Content-Type” content=”text/html; charset=iso-8859-1″>
     <title>Vendas</title>
-    <h1>Página do Relatório de Vendas</h1>
-</head>
-<body>
 
+</head>
+
+<body>
+  
+<div style='width: 100%'>
+   
+    {% autoescape off %}
+            {{ plot_div4 }}
+        {% endautoescape %}
+</div>
+<div>
+    <div style='margin:0 auto; display: inline-block'>
+        {% autoescape off %}
+            {{ plot_div }}
+        {% endautoescape %}
+    </div>
+    <div style='margin:0 auto; display: inline-block'>
+        {% autoescape off %}
+            {{ plot_div2 }}
+        {% endautoescape %}
+    </div>
+</div>
+<div>
+    {% autoescape off %}
+            {{ plot_div3 }}
+        {% endautoescape %}
+
+</div> 
 </body>
 </html>
