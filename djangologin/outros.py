@@ -32,7 +32,7 @@ df_pedido_2.sort_values(by='data_pagamento',inplace=True)
 df_pedido_2 = pd.merge(df_pedido_2,cliente,on='cliente_id',how='left')
 #info_cliente = info_cliente[['estado','valor']].groupby('estado').sum()
 
-print(df_pedido_2)
+#print(df_pedido_2)
 caixa1 = make_subplots(rows=1,cols=2,specs=[[{"type": "bar"}, {"type": "pie"}]])
 caixa2 = make_subplots(rows=1,cols=2,specs=[[{"type": "xy"}, {"type": "pie"}]])
 

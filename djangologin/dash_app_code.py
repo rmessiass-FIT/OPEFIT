@@ -26,15 +26,15 @@ df_pedido = read_frame(ped)
 
 cliente = read_frame(cli)
 
-mapa = open(str(Path(__file__).parent.absolute()) + '\static\\brasil_estado.json')
+mapa = open(str(Path(__file__).parent.absolute()) + '\static\imagens\\brasil_estado.json')
 
 brasil = json.load(mapa)
 
 df_pedido_2 = pd.read_csv(str(Path(__file__).parent) + '\\\OPE2.csv')
-camiseta = str(Path(__file__).parent.absolute()) + '\static\camiseta_icon.png'
-calca = str(Path(__file__).parent.absolute()) + '\static\calca_icon.png'
-bermuda = str(Path(__file__).parent.absolute()) + '\static'+ '\\bermuda_icon.png'
-camisa = str(Path(__file__).parent.absolute()) + '\static\camisa_icon.png'
+camiseta = str(Path(__file__).parent.absolute()) + '\static\imagens\camiseta_icon.png'
+calca = str(Path(__file__).parent.absolute()) + '\static\imagens\calca_icon.png'
+bermuda = str(Path(__file__).parent.absolute()) + '\static'+ '\imagens\\bermuda_icon.png'
+camisa = str(Path(__file__).parent.absolute()) + '\static\imagens\camisa_icon.png'
 
 info_cliente = pd.merge(df_pedido_2,cliente,on='cliente_id',how='left')
 info_cliente = info_cliente[['estado','valor']].groupby('estado').sum()
@@ -47,21 +47,27 @@ for feature in brasil['features']:
 #categoria_quantidade= ped.values('categoria').order_by('categoria').annotate(quantidade = Sum('quantidade'))
 df_pedido_2['data_pagamento'] = pd.to_datetime(df_pedido_2.data_pagamento)
 df_pedido_2.sort_values(by='data_pagamento',inplace=True)
-#df_pedido_2['valor'] = pd.to_numeric(df_pedido_2['valor'], errors='coerce')
+
+df3 = df_pedido_2[['categoria','data_pagamento','valor']].set_index('data_pagamento').groupby(['categoria'])
+df3_camiseta = df3.get_group('Camiseta')['2021-01-01':'2021-04-30']
+df3_bermuda = df3.get_group('Bermuda')['2021-01-01':'2021-04-30']
+df3_calca = df3.get_group('Bermuda')['2021-01-01':'2021-04-30']
+df3_camisa = df3.get_group('Camisa')['2021-01-01':'2021-04-30']
+print(df3_camiseta)
 
 def graficos_vendas(request):
 
-    xvalor_camiseta = df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
-    xvalor_bermuda = df_pedido_2.groupby(['categoria']).get_group('Bermuda')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
-    xvalor_calca = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
-    xvalor_camisa = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
+    xvalor_camiseta = list(df3_camiseta.index)
+    xvalor_bermuda = list(df3_bermuda.index)
+    xvalor_calca = list(df3_calca.index)
+    xvalor_camisa = list(df3_camisa.index)
 
-    ytotal= df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['valor'].sum()
+    # ytotal= df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['valor'].sum()
 
-    yvalor_camiseta = df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['valor'].values
-    yvalor_bermuda = df_pedido_2.groupby(['categoria']).get_group('Bermuda')[['valor','data_pagamento']]['valor'].values
-    yvalor_calca = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['valor'].values
-    yvalor_camisa = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['valor'].values
+    yvalor_camiseta = df3_camiseta['valor']
+    yvalor_bermuda = df3_bermuda['valor']
+    yvalor_calca = df3_calca['valor']
+    yvalor_camisa = df3_camisa['valor']
 
     camiseta_mes_ano= df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']].data_pagamento.dt.to_period("M")
     grupo_camiseta = df_pedido_2.groupby(camiseta_mes_ano).sum()
@@ -159,23 +165,23 @@ def graficos_vendas(request):
     # df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
     #                dtype={"fips": str})
     # print(df.fips)
-    fig_line_camiseta = go.Scatter(x=xvalor_camiseta,
-    y=yvalor_camiseta, name='Total Camiseta',mode='lines',
+    fig_line_camiseta = go.Bar(x=xvalor_camiseta,
+    y=yvalor_camiseta, name='Total Camiseta',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
-    fig_line_bermuda = go.Scatter(x=xvalor_bermuda,
-    y=yvalor_bermuda, name='Total Bermuda',mode='lines',
+    fig_line_bermuda = go.Bar(x=xvalor_bermuda,
+    y=yvalor_bermuda, name='Total Bermuda',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
-    fig_line_calca = go.Scatter(x=xvalor_camisa,
-    y=yvalor_camisa, name='Total Calça',mode='lines',
+    fig_line_calca = go.Bar(x=xvalor_camisa,
+    y=yvalor_camisa, name='Total Calça',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
-    fig_line_camisa = go.Scatter(x=xvalor_camisa,
-    y=yvalor_camisa, name='Total Camisa',mode='lines',
+    fig_line_camisa = go.Bar(x=xvalor_camisa,
+    y=yvalor_camisa, name='Total Camisa',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
