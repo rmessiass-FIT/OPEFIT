@@ -12,6 +12,7 @@ import dash_bootstrap_components as dbc
 from plotly.subplots import make_subplots
 import pandas as pd
 from skimage import io
+import plotly.express as px
 
 #external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -36,21 +37,24 @@ bermuda = str(Path(__file__).parent.absolute()) + '\static'+ '\\bermuda_icon.png
 camisa = str(Path(__file__).parent.absolute()) + '\static\camisa_icon.png'
 
 info_cliente = pd.merge(df_pedido_2,cliente,on='cliente_id',how='left')
-#print(brasil['features'][0])
+info_cliente = info_cliente[['estado','valor']].groupby('estado').sum()
+
+brasil_id_map = {}
+for feature in brasil['features']:
+    feature['id']=feature['properties']["UF_05"]
+    brasil_id_map[feature['properties']["NOME_UF"]] = feature['id']
 
 #categoria_quantidade= ped.values('categoria').order_by('categoria').annotate(quantidade = Sum('quantidade'))
 df_pedido_2['data_pagamento'] = pd.to_datetime(df_pedido_2.data_pagamento)
 df_pedido_2.sort_values(by='data_pagamento',inplace=True)
 #df_pedido_2['valor'] = pd.to_numeric(df_pedido_2['valor'], errors='coerce')
-#pd.to_numeric(df_pedido_2['valor'])
-# print(data.chelsea())
 
 def graficos_vendas(request):
 
-    xvalor_camiseta = df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['data_pagamento'].values
-    xvalor_bermuda = df_pedido_2.groupby(['categoria']).get_group('Bermuda')[['valor','data_pagamento']]['data_pagamento'].values
-    xvalor_calca = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].values
-    xvalor_camisa = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].values
+    xvalor_camiseta = df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
+    xvalor_bermuda = df_pedido_2.groupby(['categoria']).get_group('Bermuda')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
+    xvalor_calca = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
+    xvalor_camisa = df_pedido_2.groupby(['categoria']).get_group('Camisa')[['valor','data_pagamento']]['data_pagamento'].astype('datetime64[D]')
 
     ytotal= df_pedido_2.groupby(['categoria']).get_group('Camiseta')[['valor','data_pagamento']]['valor'].sum()
 
@@ -70,7 +74,7 @@ def graficos_vendas(request):
 
     mes_ano = df_pedido_2.data_pagamento.dt.to_period("M")
     grupo = df_pedido_2.groupby(mes_ano).sum()
-
+    
     pct_camiseta=pd.merge(grupo_camiseta,grupo,on='data_pagamento',how='left')[['quantidade_x']].div(pd.merge(grupo_camiseta,grupo,on='data_pagamento',how='left')['quantidade_y'],axis=0)
     pct_bermuda=pd.merge(grupo_bermuda,grupo,on='data_pagamento',how='left')[['quantidade_x']].div(pd.merge(grupo_bermuda,grupo,on='data_pagamento',how='left')['quantidade_y'],axis=0)
     pct_calca=pd.merge(grupo_calca,grupo,on='data_pagamento',how='left')[['quantidade_x']].div(pd.merge(grupo_calca,grupo,on='data_pagamento',how='left')['quantidade_y'],axis=0)
@@ -83,7 +87,7 @@ def graficos_vendas(request):
     night_colors = ['rgb(56, 75, 126)', 'rgb(18, 36, 37)', 'rgb(34, 53, 101)',
                 'rgb(36, 55, 57)']
 
-    fig=go.Figure()
+    # fig=go.Figure()
     fig2=make_subplots(rows=2,cols=4)
     fig3 = go.Figure()
     fig4 = go.Figure()
@@ -145,29 +149,33 @@ def graficos_vendas(request):
 
     fig3.update_layout(annotations=annotations)
 
-    fig.add_traces(go.Pie(labels=info_cliente[['valor','estado']]['estado'], values=info_cliente[['valor','estado']]['valor'], name='Valor'))
-    # fig = go.Figure(go.Choroplethmapbox(geojson=brasil, locations=info_cliente[['valor','estado']]['estado'], z=info_cliente[['valor','estado']]['valor']))
+    # fig.add_traces(go.Pie(labels=info_cliente[['valor','estado']]['estado'], values=info_cliente[['valor','estado']]['valor'], name='Valor'))
+    #fig = go.Figure(go.Choroplethmapbox(geojson=brasil, locations=info_cliente[['valor','estado']]['estado'], z=info_cliente[['valor','estado']]['valor'].astype(float)))
+    
+    fig = px.choropleth(info_cliente, locations=info_cliente.index ,geojson=brasil, color='valor')
+    fig.update_geos(fitbounds = "locations", visible = False)
+    
     # print(info_cliente[['valor','estado']]['estado'])
     # df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
     #                dtype={"fips": str})
     # print(df.fips)
     fig_line_camiseta = go.Scatter(x=xvalor_camiseta,
-    y=yvalor_camiseta, name='Total Camiseta',
+    y=yvalor_camiseta, name='Total Camiseta',mode='lines',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
     fig_line_bermuda = go.Scatter(x=xvalor_bermuda,
-    y=yvalor_bermuda, name='Total Bermuda',
+    y=yvalor_bermuda, name='Total Bermuda',mode='lines',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
     fig_line_calca = go.Scatter(x=xvalor_camisa,
-    y=yvalor_camisa, name='Total Calça',
+    y=yvalor_camisa, name='Total Calça',mode='lines',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
     fig_line_camisa = go.Scatter(x=xvalor_camisa,
-    y=yvalor_camisa, name='Total Camisa',
+    y=yvalor_camisa, name='Total Camisa',mode='lines',
     hovertemplate = 'Valor: %{y:$.2f}<extra></extra>',
     marker=dict(color=['rgb(18, 36, 37)']))
 
@@ -180,30 +188,30 @@ def graficos_vendas(request):
     fig2.add_trace(go.Image(z=io.imread(camisa)), row=1,col=3)
     fig2.add_trace(fig_line_camisa, row=2,col=4)
 
-    fig.update_layout(height=500, showlegend=True,
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,0,0,0)'
-    )
+    # fig.update_layout(height=500, showlegend=True,
+    # paper_bgcolor='rgba(0,0,0,0)',
+    # plot_bgcolor='rgba(0,0,0,0)'
+    # )
     
-    fig2.update_layout(height=500, width=1100, showlegend=False,
+    fig2.update_layout(height=500, width=1150, showlegend=False,
     paper_bgcolor='rgba(0,0,0,0)',
     plot_bgcolor='rgba(0,0,0,0)',
     yaxis={"visible": False},
     xaxis ={"visible": False},
-    yaxis2={"visible": False},
-    xaxis2 ={"visible": False},
+    yaxis2={"visible": True},
+    xaxis2 ={"visible": True},
     yaxis3={"visible": False},
     xaxis3 ={"visible": False},
-    yaxis4={"visible": False},
-    xaxis4 ={"visible": False},
+    yaxis4={"visible": True},
+    xaxis4 ={"visible": True},
     yaxis5={"visible": False},
     xaxis5 ={"visible": False},
-    yaxis6={"visible": False},
-    xaxis6 ={"visible": False},
+    yaxis6={"visible": True},
+    xaxis6 ={"visible": True},
     yaxis7={"visible": False},
     xaxis7={"visible": False},
-    yaxis8={"visible": False},
-    xaxis8 ={"visible": False},
+    yaxis8={"visible": True},
+    xaxis8 ={"visible": True},
     )
 
     fig3.update_layout(
