@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic.base import TemplateView
 import djangologin.dash_app_code as dd
+import djangologin.outros as outros
 
 
 urlpatterns = [
